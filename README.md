@@ -2,16 +2,19 @@
 
 Browser-based team draw and knockout scheduler. Paste (or upload) a list of names, generate randomized teams, then click through the bracket to advance winners. Runs entirely in your browser — no server, no signup, no data leaves the tab.
 
-**Live:** <https://mandeep-pitta.github.io/team-gen/>
+**Live:** <https://pmraj23.github.io/> — chooser page linking to both modes.
+
+- Classic knockout — <https://pmraj23.github.io/classic.html>
+- Hybrid mode — <https://pmraj23.github.io/hybrid.html>
 
 ## Two modes
 
 | Mode | File | What it does |
 |---|---|---|
-| **Classic** | [index.html](index.html) | Pure single-elimination. Odd rounds get one bye assigned at random — no positional advantage for top seeds. |
+| **Classic** | [classic.html](classic.html) | Pure single-elimination. Odd rounds get one bye assigned at random — no positional advantage for top seeds. |
 | **Hybrid** | [hybrid.html](hybrid.html) | Round 1 is knockout. From round 2 onward, any round with an odd team count plays as a round-robin group with the top 2 advancing. Avoids compounding byes in later rounds. |
 
-Switch between them via the "Hybrid mode →" / "← Classic knockout" link in each page's masthead.
+`index.html` is a small chooser page that links to both modes. Every page's masthead also has a **Home** link back to the chooser and a link to the other mode.
 
 ## Features
 
@@ -29,11 +32,11 @@ Switch between them via the "Hybrid mode →" / "← Classic knockout" link in e
 
 ## Local use
 
-Clone or download the repo and open either `index.html` or `hybrid.html` directly in a browser. No build step, no dependencies, no `npm install`.
+Clone or download the repo and open `index.html` (chooser) or either mode file directly in a browser. No build step, no dependencies, no `npm install`.
 
 ```
-git clone https://github.com/mandeep-pitta/team-gen.git
-cd team-gen
+git clone https://github.com/pmraj23/pmraj23.github.io.git
+cd pmraj23.github.io
 open index.html
 ```
 

@@ -1,22 +1,22 @@
 <!doctype html>
 <html lang="en">
 <meta charset="utf-8" />
-<title>Draw & Hybrid · Knockout + round-robin</title>
+<title>Draw & Bracket · Classic knockout</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="description" content="Hybrid tournament bracket: round 1 is knockout, later rounds with an odd team count play round-robin with the top 2 advancing. Avoids compounding byes. All in-browser." />
+<meta name="description" content="Browser-based team draw and knockout scheduler. Paste names, generate randomized teams of any size, then click through a bracket to advance winners. State saves locally; export/import as JSON. No server, no signup." />
 <meta name="theme-color" content="#F2EFE7" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#0E0F0C" media="(prefers-color-scheme: dark)" />
 <link rel="icon" href="favicon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="favicon.svg" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Draw & Bracket" />
-<meta property="og:title" content="Draw & Hybrid — knockout + round-robin scheduler" />
-<meta property="og:description" content="Round 1 knockout, later odd rounds play round-robin with the top 2 advancing. Avoids compounding byes. All in-browser." />
-<meta property="og:url" content="https://pmraj23.github.io/hybrid.html" />
+<meta property="og:title" content="Draw & Bracket — team maker + knockout scheduler" />
+<meta property="og:description" content="Paste names, generate randomized teams, then click through a knockout bracket. State saves locally; export/import as JSON. No server, no signup." />
+<meta property="og:url" content="https://pmraj23.github.io/classic.html" />
 <meta property="og:image" content="https://pmraj23.github.io/og-image.svg" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Draw & Hybrid — knockout + round-robin scheduler" />
-<meta name="twitter:description" content="Round 1 knockout, later odd rounds go round-robin. All in-browser." />
+<meta name="twitter:title" content="Draw & Bracket — team maker + knockout scheduler" />
+<meta name="twitter:description" content="Paste names, generate teams, click through a bracket. All in-browser." />
 <style>
   :root{
     --bg:#F2EFE7;
@@ -568,140 +568,6 @@
   }
   .connectors svg{width:100%;height:100%;display:block;overflow:visible}
 
-  /* Round-robin styling — replaces knockout matches when a round has odd count */
-  .round.rr{
-    min-width:280px;
-    justify-content:flex-start;
-    gap:8px;
-  }
-  .round.rr .round-head{
-    background:var(--accent);
-    color:var(--accent-ink);
-  }
-  .rr-note{
-    font-family:var(--font-mono);
-    font-size:10.5px;
-    letter-spacing:.06em;
-    color:var(--muted);
-    text-transform:uppercase;
-    margin:-4px 0 8px;
-  }
-  .rr-matches{
-    display:flex;
-    flex-direction:column;
-    gap:6px;
-    margin-bottom:12px;
-  }
-  .rr-match{
-    display:grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap:8px;
-    align-items:stretch;
-    background:var(--bg);
-    border:1.5px solid var(--rail-strong);
-    border-radius:var(--radius);
-    overflow:hidden;
-    padding:0;
-    min-height:44px;
-  }
-  .rr-match.decided{border-color:var(--ink)}
-  .rr-side{
-    padding:8px 10px;
-    border:none;
-    background:transparent;
-    cursor:pointer;
-    text-align:left;
-    font-family:inherit;
-    color:var(--ink);
-    font-size:13px;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    line-height:1.2;
-  }
-  .rr-side.right{text-align:right; justify-content:flex-end}
-  .rr-side .s{
-    font-family:var(--font-mono);
-    font-size:10px;
-    color:var(--muted);
-    font-weight:700;
-  }
-  .rr-side .n{font-weight:600; word-break:break-word}
-  .rr-side:hover:not(:disabled){background:rgba(226,74,27,.06)}
-  .rr-side.winner{background:rgba(11,79,48,.09); font-weight:700}
-  :root[data-theme="dark"] .rr-side.winner,
-  :root:not([data-theme="light"]) .rr-side.winner{background:rgba(62,139,103,.18)}
-  .rr-side.loser .n{color:var(--muted); text-decoration:line-through; text-decoration-color:var(--rail-strong)}
-  .rr-vs{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:0 8px;
-    font-family:var(--font-mono);
-    font-size:10px;
-    color:var(--muted);
-    letter-spacing:.1em;
-    background:var(--panel);
-  }
-  .rr-standings{
-    background:var(--panel);
-    border:1.5px solid var(--rail-strong);
-    border-radius:var(--radius);
-    padding:10px 12px;
-  }
-  .rr-standings h4{
-    margin:0 0 8px;
-    font-family:var(--font-display);
-    font-weight:900;
-    text-transform:uppercase;
-    letter-spacing:.14em;
-    font-size:11px;
-    color:var(--muted);
-  }
-  .rr-table{
-    display:grid;
-    grid-template-columns: 26px 1fr 42px 32px;
-    gap:2px 8px;
-    font-size:12.5px;
-    align-items:center;
-  }
-  .rr-table .rr-row{
-    display:contents;
-  }
-  .rr-table .rr-rank{
-    font-family:var(--font-mono);
-    color:var(--muted);
-    font-size:11px;
-    text-align:right;
-  }
-  .rr-table .rr-name{
-    word-break:break-word;
-    line-height:1.2;
-    padding:2px 0;
-  }
-  .rr-table .rr-w, .rr-table .rr-l{
-    font-family:var(--font-mono);
-    font-weight:700;
-    text-align:right;
-    color:var(--ink);
-  }
-  .rr-table .rr-l{color:var(--muted); font-weight:500}
-  .rr-table .rr-row.advances .rr-name{color:var(--good); font-weight:700}
-  .rr-table .rr-row.advances .rr-rank::before{
-    content:"▸ ";
-    color:var(--good);
-  }
-  .rr-table .rr-header{
-    color:var(--muted);
-    font-size:10px;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-    font-weight:700;
-    padding-bottom:4px;
-    border-bottom:1px dashed var(--rail);
-    margin-bottom:2px;
-  }
-
   .champ-card{
     background:var(--ink);
     color:var(--bg);
@@ -768,12 +634,12 @@
 <div class="page">
   <header class="masthead">
     <div class="logo">
-      <span>Draw</span><span class="amp">&amp;</span><span>Hybrid</span>
-      <small>Knockout, with round-robin whenever a later round has an odd count</small>
+      <span>Draw</span><span class="amp">&amp;</span><span>Bracket</span>
+      <small>Team maker · single-elim scheduler</small>
     </div>
     <div class="mode-nav">
       <a href="./" class="mode-link">← Home</a>
-      <a href="classic.html" class="mode-link">Classic knockout →</a>
+      <a href="hybrid.html" class="mode-link">Hybrid mode →</a>
       <div class="backup-nav" role="group" aria-label="Backup and restore">
         <span class="label">Backup</span>
         <button class="mode-link ghost" id="exportJsonBtn" type="button" title="Download full state as JSON (can be re-imported)">Export JSON</button>
@@ -845,7 +711,7 @@
   <!-- BRACKET -->
   <section class="slab" aria-labelledby="s3">
     <div class="slab-head">
-      <h2 id="s3"><span class="num">03</span>Hybrid Bracket</h2>
+      <h2 id="s3"><span class="num">03</span>Knockout Bracket</h2>
       <div class="btn-row" style="margin:0">
         <button class="btn btn-ghost btn-small" id="buildBracket" type="button">Build bracket</button>
         <button class="btn btn-ghost btn-small" id="resetBracket" type="button">Reset winners</button>
@@ -854,11 +720,11 @@
     <div class="bracket-scroll" id="bracketScroll">
       <div id="bracketOut" class="bracket"></div>
     </div>
-    <div id="bracketEmpty" class="empty">Draw teams first, then press <b>Build bracket</b>. In a knockout match click a team to advance them; in a round-robin round every pair plays and the top 2 by record move on.</div>
+    <div id="bracketEmpty" class="empty">Draw teams first, then press <b>Build bracket</b>. Click either team in a match to advance them.</div>
   </section>
 
   <div class="foot">
-    <span class="rules">Round 1 knockout · rounds 2+ with an odd count play round-robin · top 2 advance to a final</span>
+    <span class="rules">Single elimination · seeded 1 v N, 2 v N-1 … · byes auto-advance round 1</span>
     <span>Saved locally · nothing leaves your browser.</span>
   </div>
 </div>
@@ -875,7 +741,7 @@
 
   // Persist teams, bracket, winner picks, and the roster textarea in
   // localStorage. Survives reloads until the user hits "Clear".
-  const STORE_KEY = 'draw-bracket-hybrid:v1';
+  const STORE_KEY = 'draw-bracket:v1';
   const saveState = () => {
     try {
       const snap = {
@@ -899,38 +765,12 @@
   const relinkBracketTeams = () => {
     if (!state.bracket || !state.teams.length) return;
     const bySeed = new Map(state.teams.map(t => [t.seed, t]));
-    const rl = (t) => (t && t.seed != null) ? (bySeed.get(t.seed) || t) : t;
     for (const round of state.bracket.rounds) {
-      if (!round || !round.matches) continue;
-      for (const m of round.matches) { m.a = rl(m.a); m.b = rl(m.b); }
-      if (round.type === 'roundRobin' && Array.isArray(round.teams)) {
-        round.teams = round.teams.map(rl);
+      for (const m of round) {
+        if (m.a && m.a.seed != null) { const t = bySeed.get(m.a.seed); if (t) m.a = t; }
+        if (m.b && m.b.seed != null) { const t = bySeed.get(m.b.seed); if (t) m.b = t; }
       }
     }
-  };
-
-  // W-L standings for a round-robin round. Tiebreak: lower seed wins.
-  const computeStandings = (rrRound) => {
-    const teams = (rrRound.teams || []).filter(Boolean);
-    const wins   = new Map(teams.map(t => [t.seed, 0]));
-    const losses = new Map(teams.map(t => [t.seed, 0]));
-    for (const m of rrRound.matches) {
-      if (!m.a || !m.b) continue;
-      if (m.winner === 'a') {
-        wins.set(m.a.seed,   (wins.get(m.a.seed)   || 0) + 1);
-        losses.set(m.b.seed, (losses.get(m.b.seed) || 0) + 1);
-      } else if (m.winner === 'b') {
-        wins.set(m.b.seed,   (wins.get(m.b.seed)   || 0) + 1);
-        losses.set(m.a.seed, (losses.get(m.a.seed) || 0) + 1);
-      }
-    }
-    return teams.slice()
-      .sort((a, b) => {
-        const dw = (wins.get(b.seed) || 0) - (wins.get(a.seed) || 0);
-        if (dw !== 0) return dw;
-        return a.seed - b.seed;
-      })
-      .map(t => ({ team: t, wins: wins.get(t.seed) || 0, losses: losses.get(t.seed) || 0 }));
   };
   const loadState = () => {
     let raw;
@@ -1198,32 +1038,24 @@
     '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[c]));
 
-  // ── Build bracket (hybrid) ───────────────────────────────
-  // Round 1: knockout as before (top-seed-random bye if odd count).
-  // Rounds 2+: if the incoming team count is ODD, that round becomes a
-  //   ROUND-ROBIN. All participating teams play each other. Top 2 by
-  //   record advance to the next knockout round; ties break on lower
-  //   seed. Even rounds stay as normal knockout.
-  //
-  // Data shape:
-  //   state.bracket.rounds = [
-  //     { type:'knockout', matches:[…] },
-  //     { type:'roundRobin', teams:[…], matches:[…], advancesTop:2 },
-  //     { type:'knockout', matches:[{ parentRR:prevIdx, … }] },
-  //     …
-  //   ]
+  // ── Build bracket ────────────────────────────────────────
+  // Rolling-byes: whenever a round has an odd count, ONE recipient
+  // gets a bye. To avoid a positional advantage (top seed always
+  // byeing, then compounding in later rounds), we pick the bye
+  // recipient at RANDOM each odd round. Choice is saved with the
+  // bracket so it doesn't drift after reload.
   const buildBracket = () => {
     if (state.teams.length < 2) { toast('Draw teams first'); return; }
     const teams = state.teams.slice();
     const rounds = [];
 
-    // ── Round 1: knockout with a random bye if odd
-    const r1matches = [];
+    // ── Round 1: pair actual teams
+    const r1 = [];
     let mIdx = 0;
     const oddR1 = teams.length % 2 === 1;
     const byeIdxR1 = oddR1 ? Math.floor(Math.random() * teams.length) : -1;
     if (oddR1) {
-      r1matches.push({
+      r1.push({
         id: `R1M${mIdx+1}`, round: 0, idx: mIdx,
         a: teams[byeIdxR1], b: null,
         parentA: null, parentB: null,
@@ -1231,9 +1063,11 @@
       });
       mIdx++;
     }
+    // Pair the remaining teams high-vs-low seed to spread strength.
     const others = teams.filter((_, i) => i !== byeIdxR1);
-    for (let k = 0; k < others.length / 2; k++) {
-      r1matches.push({
+    const pairs = others.length / 2;
+    for (let k = 0; k < pairs; k++) {
+      r1.push({
         id: `R1M${mIdx+1}`, round: 0, idx: mIdx,
         a: others[k], b: others[others.length - 1 - k],
         parentA: null, parentB: null,
@@ -1241,56 +1075,39 @@
       });
       mIdx++;
     }
-    rounds.push({ type: 'knockout', matches: r1matches });
+    rounds.push(r1);
 
-    // ── Rounds 2+: knockout when the incoming count is even, round-
-    //   robin when it's odd. Loop until we're down to a single team.
-    let inflow = r1matches.length;   // team count entering next round
+    // ── Subsequent rounds: pick a random prev match to receive the bye
+    let prev = r1;
     let roundIdx = 1;
-    while (inflow > 1) {
-      const prev = rounds[roundIdx - 1];
-      const prevSize = (prev.type === 'roundRobin')
-        ? Math.min(prev.advancesTop, prev.teams.length)
-        : prev.matches.length;
-
-      if (inflow % 2 === 0) {
-        // Even → knockout, standard pairings
-        const matches = [];
-        for (let i = 0; i < prevSize; i += 2) {
-          matches.push({
-            id: `R${roundIdx+1}M${(i/2)+1}`, round: roundIdx, idx: i/2,
-            a: null, b: null,
-            parentA: (prev.type === 'roundRobin') ? { rrRank: i } : i,
-            parentB: (prev.type === 'roundRobin') ? { rrRank: i + 1 } : i + 1,
-            bye: false, winner: null,
-          });
-        }
-        rounds.push({ type: 'knockout', matches });
-        inflow = matches.length;
-      } else {
-        // Odd → round-robin. Teams filled by propagateWinners; here we
-        // generate the pair list (indices) and reserve slots.
-        const matches = [];
-        let idx = 0;
-        for (let i = 0; i < inflow; i++) {
-          for (let j = i + 1; j < inflow; j++) {
-            matches.push({
-              id: `R${roundIdx+1}M${idx+1}`, round: roundIdx, idx,
-              a: null, b: null,
-              slotA: i, slotB: j,   // index into this round's teams
-              winner: null, rr: true,
-            });
-            idx++;
-          }
-        }
-        rounds.push({
-          type: 'roundRobin',
-          teams: new Array(inflow).fill(null),
-          matches,
-          advancesTop: Math.min(2, inflow),
+    while (prev.length > 1) {
+      const cur = [];
+      let cIdx = 0;
+      const odd = prev.length % 2 === 1;
+      const byeParent = odd ? Math.floor(Math.random() * prev.length) : -1;
+      if (odd) {
+        cur.push({
+          id: `R${roundIdx+1}M${cIdx+1}`, round: roundIdx, idx: cIdx,
+          a: null, b: null,
+          parentA: byeParent, parentB: null,
+          bye: true, winner: null,
         });
-        inflow = Math.min(2, inflow);   // top-N advances
+        cIdx++;
       }
+      // Pair the remaining prev-round matches (all except the bye parent)
+      const rest = [];
+      for (let i = 0; i < prev.length; i++) if (i !== byeParent) rest.push(i);
+      for (let i = 0; i < rest.length; i += 2) {
+        cur.push({
+          id: `R${roundIdx+1}M${cIdx+1}`, round: roundIdx, idx: cIdx,
+          a: null, b: null,
+          parentA: rest[i], parentB: rest[i + 1],
+          bye: false, winner: null,
+        });
+        cIdx++;
+      }
+      rounds.push(cur);
+      prev = cur;
       roundIdx++;
     }
 
@@ -1298,13 +1115,8 @@
     propagateWinners();
     renderBracket();
     saveState();
-    const byeCount = rounds.filter(r => r.type === 'knockout')
-      .flatMap(r => r.matches).filter(m => m.bye).length;
-    const rrCount = rounds.filter(r => r.type === 'roundRobin').length;
-    const bits = [`${teams.length} teams`, `${rounds.length} round${rounds.length === 1 ? '' : 's'}`];
-    if (byeCount) bits.push(`${byeCount} bye${byeCount === 1 ? '' : 's'}`);
-    if (rrCount)  bits.push(`${rrCount} round-robin`);
-    toast(`Bracket built · ${bits.join(' · ')}`);
+    const totalByes = rounds.flat().filter(m => m.bye).length;
+    toast(`Bracket built · ${teams.length} teams · ${totalByes} bye${totalByes === 1 ? '' : 's'} · byes assigned at random`);
   };
   $('#buildBracket').addEventListener('click', () => {
     try { buildBracket(); }
@@ -1314,7 +1126,7 @@
   $('#resetBracket').addEventListener('click', () => {
     if (!state.bracket) return;
     for (const round of state.bracket.rounds) {
-      for (const m of round.matches) {
+      for (const m of round) {
         if (!m.bye) m.winner = null;   // bye winners are auto and stay auto
       }
     }
@@ -1324,78 +1136,36 @@
     toast('Winners cleared');
   });
 
-  // Fill in a match slot from a "parent" pointer. Parents can be:
-  //   • an integer index into the previous knockout round's matches
-  //     → team is the winner of that match
-  //   • an object { rrRank: N } → team is standings[N] of the previous
-  //     round-robin round
-  const resolveParent = (parent, prev) => {
-    if (parent == null || !prev) return null;
-    if (typeof parent === 'number') {
-      const pm = prev.matches[parent];
-      if (!pm) return null;
-      return pm.winner === 'a' ? pm.a
-           : pm.winner === 'b' ? pm.b : null;
-    }
-    if (typeof parent === 'object' && parent.rrRank != null) {
-      const st = computeStandings(prev);
-      return st[parent.rrRank] ? st[parent.rrRank].team : null;
-    }
-    return null;
-  };
-
-  // Propagate winners forward through the bracket, handling both
-  // knockout and round-robin round types.
+  // Propagate winners forward through the bracket using each match's
+  // explicit parentA/parentB pointers into the previous round.
   const propagateWinners = () => {
     if (!state.bracket) return;
     const rounds = state.bracket.rounds;
     for (let r = 0; r < rounds.length; r++) {
-      const round = rounds[r];
-      const prev  = r > 0 ? rounds[r - 1] : null;
-
-      if (round.type === 'roundRobin') {
-        // Fill this round's team pool from the previous round.
-        const pool = [];
-        if (prev && prev.type === 'knockout') {
-          for (const pm of prev.matches) {
-            pool.push(pm.winner === 'a' ? pm.a
-                    : pm.winner === 'b' ? pm.b : null);
-          }
-        } else if (prev && prev.type === 'roundRobin') {
-          const st = computeStandings(prev);
-          for (let i = 0; i < prev.advancesTop; i++) {
-            pool.push(st[i] ? st[i].team : null);
-          }
+      for (const m of rounds[r]) {
+        if (r > 0) {
+          const prev = rounds[r - 1];
+          m.a = (m.parentA != null)
+            ? (prev[m.parentA].winner === 'a' ? prev[m.parentA].a
+              : prev[m.parentA].winner === 'b' ? prev[m.parentA].b : null)
+            : m.a;
+          m.b = (m.parentB != null)
+            ? (prev[m.parentB].winner === 'a' ? prev[m.parentB].a
+              : prev[m.parentB].winner === 'b' ? prev[m.parentB].b : null)
+            : null;
         }
-        for (let i = 0; i < round.teams.length; i++) {
-          round.teams[i] = pool[i] || null;
-        }
-        for (const m of round.matches) {
-          m.a = round.teams[m.slotA] || null;
-          m.b = round.teams[m.slotB] || null;
+        if (m.bye) {
+          m.winner = m.a ? 'a' : null;
+        } else {
           if (m.winner === 'a' && !m.a) m.winner = null;
           if (m.winner === 'b' && !m.b) m.winner = null;
-        }
-      } else {
-        for (const m of round.matches) {
-          if (r > 0) {
-            m.a = resolveParent(m.parentA, prev);
-            m.b = resolveParent(m.parentB, prev);
-          }
-          if (m.bye) {
-            m.winner = m.a ? 'a' : null;
-          } else {
-            if (m.winner === 'a' && !m.a) m.winner = null;
-            if (m.winner === 'b' && !m.b) m.winner = null;
-          }
         }
       }
     }
   };
 
   const pickWinner = (roundIdx, matchIdx, side) => {
-    const round = state.bracket.rounds[roundIdx];
-    const m = round.matches[matchIdx];
+    const m = state.bracket.rounds[roundIdx][matchIdx];
     if (m.bye) return;
     if (!m.a || !m.b) return;
     m.winner = (m.winner === side) ? null : side;
@@ -1413,25 +1183,14 @@
     return { name, tag: seed };
   };
 
-  const roundTitle = (round, r, rounds) => {
-    if (round.type === 'roundRobin') {
-      const n = (round.teams || []).length;
-      return `Round Robin${n ? ` · ${n}` : ''}`;
-    }
-    // Name by how many teams are entering this round
-    let teamsIn;
-    if (r === 0) {
-      teamsIn = round.matches.length * 2 - round.matches.filter(m => m.bye).length;
-    } else {
-      const prev = rounds[r - 1];
-      teamsIn = prev.type === 'roundRobin' ? prev.advancesTop : prev.matches.length;
-    }
-    if (teamsIn <= 2)  return 'Final';
-    if (teamsIn <= 4)  return 'Semifinal';
-    if (teamsIn <= 8)  return 'Quarterfinal';
-    if (teamsIn <= 16) return 'Round of 16';
-    if (teamsIn <= 32) return 'Round of 32';
-    if (teamsIn <= 64) return 'Round of 64';
+  const roundTitle = (r, total) => {
+    const fromEnd = total - 1 - r;              // 0 = final, 1 = semis, …
+    if (fromEnd === 0) return 'Final';
+    if (fromEnd === 1) return 'Semifinal';
+    if (fromEnd === 2) return 'Quarterfinal';
+    if (fromEnd === 3) return 'Round of 16';
+    if (fromEnd === 4) return 'Round of 32';
+    if (fromEnd === 5) return 'Round of 64';
     return `Round ${r + 1}`;
   };
 
@@ -1445,35 +1204,62 @@
     const rounds = state.bracket.rounds;
     rounds.forEach((round, rIdx) => {
       const col = document.createElement('div');
-      col.className = 'round' + (round.type === 'roundRobin' ? ' rr' : '');
+      col.className = 'round';
       const head = document.createElement('div');
       head.className = 'round-head';
-      head.textContent = roundTitle(round, rIdx, rounds);
+      head.textContent = roundTitle(rIdx, rounds.length);
       col.appendChild(head);
 
-      if (round.type === 'roundRobin') {
-        renderRRRound(col, round, rIdx);
-      } else {
-        renderKORound(col, round, rIdx);
-      }
+      round.forEach((m, mIdx) => {
+        const box = document.createElement('div');
+        box.className = 'match' + (m.winner ? ' decided' : '');
+
+        const tag = document.createElement('div');
+        tag.className = 'match-tag';
+        const statusHtml = m.bye
+          ? 'bye · auto-advance'
+          : (m.winner ? '✓ decided'
+            : (m.a && m.b ? '<span class="live">live</span>' : 'pending'));
+        tag.innerHTML = `<span>Match ${rIdx+1}.${mIdx+1}</span><span>${statusHtml}</span>`;
+        box.appendChild(tag);
+
+        const mkSlot = (side) => {
+          const t = side === 'a' ? m.a : m.b;
+          const info = (m.bye && side === 'b')
+            ? { name: 'BYE', tag: '·', bye: true }
+            : teamLabel(t);
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          const isWinner = m.winner === side;
+          const isLoser  = m.winner && m.winner !== side;
+          const clickable = !m.bye && m.a && m.b;
+          btn.className = 'slot'
+            + (isWinner ? ' winner' : '')
+            + (isLoser ? ' loser' : '')
+            + (!clickable ? ' disabled' : '')
+            + (info.bye ? ' bye' : '');
+          btn.innerHTML = `
+            <span class="s">${info.tag}</span>
+            <span class="n">${escapeHtml(info.name)}</span>
+            <span class="tick">✓</span>
+          `;
+          if (clickable) {
+            btn.addEventListener('click', () => pickWinner(rIdx, mIdx, side));
+          }
+          return btn;
+        };
+        box.appendChild(mkSlot('a'));
+        box.appendChild(mkSlot('b'));
+
+        col.appendChild(box);
+      });
 
       host.appendChild(col);
     });
 
-    // Champion: last round is either a knockout final or a terminal
-    // round-robin. Fall back gracefully if neither has decided.
-    const last = rounds[rounds.length - 1];
-    let champTeam = null;
-    if (last.type === 'knockout') {
-      const final = last.matches[0];
-      if (final && final.winner) champTeam = final.winner === 'a' ? final.a : final.b;
-    } else if (last.type === 'roundRobin') {
-      const allPlayed = last.matches.every(m => m.winner);
-      if (allPlayed) {
-        const st = computeStandings(last);
-        if (st.length) champTeam = st[0].team;
-      }
-    }
+    // Champion card
+    const final = rounds[rounds.length - 1][0];
+    const champTeam = final && final.winner ? (final.winner === 'a' ? final.a : final.b) : null;
     const champ = document.createElement('div');
     champ.className = 'champ-card';
     if (champTeam) {
@@ -1486,115 +1272,6 @@
 
     // Draw connector rails between rounds
     requestAnimationFrame(drawConnectors);
-  };
-
-  const renderKORound = (col, round, rIdx) => {
-    round.matches.forEach((m, mIdx) => {
-      const box = document.createElement('div');
-      box.className = 'match' + (m.winner ? ' decided' : '');
-
-      const tag = document.createElement('div');
-      tag.className = 'match-tag';
-      const statusHtml = m.bye
-        ? 'bye · auto-advance'
-        : (m.winner ? '✓ decided'
-          : (m.a && m.b ? '<span class="live">live</span>' : 'pending'));
-      tag.innerHTML = `<span>Match ${rIdx+1}.${mIdx+1}</span><span>${statusHtml}</span>`;
-      box.appendChild(tag);
-
-      const mkSlot = (side) => {
-        const t = side === 'a' ? m.a : m.b;
-        const info = (m.bye && side === 'b')
-          ? { name: 'BYE', tag: '·', bye: true }
-          : teamLabel(t);
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        const isWinner = m.winner === side;
-        const isLoser  = m.winner && m.winner !== side;
-        const clickable = !m.bye && m.a && m.b;
-        btn.className = 'slot'
-          + (isWinner ? ' winner' : '')
-          + (isLoser ? ' loser' : '')
-          + (!clickable ? ' disabled' : '')
-          + (info.bye ? ' bye' : '');
-        btn.innerHTML = `
-          <span class="s">${info.tag}</span>
-          <span class="n">${escapeHtml(info.name)}</span>
-          <span class="tick">✓</span>
-        `;
-        if (clickable) btn.addEventListener('click', () => pickWinner(rIdx, mIdx, side));
-        return btn;
-      };
-      box.appendChild(mkSlot('a'));
-      box.appendChild(mkSlot('b'));
-      col.appendChild(box);
-    });
-  };
-
-  const renderRRRound = (col, round, rIdx) => {
-    const note = document.createElement('div');
-    note.className = 'rr-note';
-    note.textContent = `All-play-all · top ${round.advancesTop} advance`;
-    col.appendChild(note);
-
-    const matchesEl = document.createElement('div');
-    matchesEl.className = 'rr-matches';
-    round.matches.forEach((m, mIdx) => {
-      const box = document.createElement('div');
-      box.className = 'rr-match' + (m.winner ? ' decided' : '');
-
-      const mkSide = (side, position) => {
-        const info = teamLabel(side === 'a' ? m.a : m.b);
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        const isWinner = m.winner === side;
-        const isLoser  = m.winner && m.winner !== side;
-        const clickable = m.a && m.b;
-        btn.className = 'rr-side ' + position
-          + (isWinner ? ' winner' : '')
-          + (isLoser ? ' loser' : '');
-        btn.disabled = !clickable;
-        btn.innerHTML = position === 'left'
-          ? `<span class="s">${info.tag}</span><span class="n">${escapeHtml(info.name)}</span>`
-          : `<span class="n">${escapeHtml(info.name)}</span><span class="s">${info.tag}</span>`;
-        if (clickable) btn.addEventListener('click', () => pickWinner(rIdx, mIdx, side));
-        return btn;
-      };
-      box.appendChild(mkSide('a', 'left'));
-      const vs = document.createElement('div');
-      vs.className = 'rr-vs';
-      vs.textContent = 'vs';
-      box.appendChild(vs);
-      box.appendChild(mkSide('b', 'right'));
-      matchesEl.appendChild(box);
-    });
-    col.appendChild(matchesEl);
-
-    // Standings
-    const standings = computeStandings(round);
-    const stEl = document.createElement('div');
-    stEl.className = 'rr-standings';
-    const rowsHtml = standings.map((s, i) => {
-      const info = teamLabel(s.team);
-      const advances = i < round.advancesTop;
-      return `<div class="rr-row${advances ? ' advances' : ''}">
-        <div class="rr-rank">${i+1}</div>
-        <div class="rr-name">${escapeHtml(info.name)}</div>
-        <div class="rr-w">${s.wins}</div>
-        <div class="rr-l">${s.losses}</div>
-      </div>`;
-    }).join('');
-    stEl.innerHTML = `
-      <h4>Standings · top ${round.advancesTop} advance</h4>
-      <div class="rr-table">
-        <div class="rr-header rr-rank">#</div>
-        <div class="rr-header">Team</div>
-        <div class="rr-header rr-w">W</div>
-        <div class="rr-header rr-l">L</div>
-        ${rowsHtml}
-      </div>
-    `;
-    col.appendChild(stEl);
   };
 
   const drawConnectors = () => {
@@ -1637,32 +1314,22 @@
     const strokeColor = getComputedStyle(document.documentElement).getPropertyValue('--rail-strong').trim() || '#B9B2A0';
 
     for (let r = 1; r < rounds.length; r++) {
-      const round = rounds[r];
-      if (round.type === 'roundRobin') continue;   // rr rounds ingest team pool; no per-match rails
       const prevCol = cols[r - 1];
       const curCol  = cols[r];
       if (!prevCol || !curCol) continue;
-      const prev = rounds[r - 1];
       const prevMatches = prevCol.querySelectorAll('.match');
       const curMatches  = curCol.querySelectorAll('.match');
-      const rrStandings = prevCol.querySelector('.rr-standings');
-
-      round.matches.forEach((m, mIdx) => {
+      rounds[r].forEach((m, mIdx) => {
         if (!curMatches[mIdx]) return;
         const child = centerOf(curMatches[mIdx]);
-        const parents = [m.parentA, m.parentB].filter(x => x != null);
-        for (const p of parents) {
-          let src = null;
-          if (typeof p === 'number' && prev.type === 'knockout') {
-            const pel = prevMatches[p];
-            if (pel) src = centerOf(pel);
-          } else if (typeof p === 'object' && p.rrRank != null && rrStandings) {
-            src = centerOf(rrStandings);
-          }
-          if (!src) continue;
-          const x1 = src.right, x2 = child.left;
+        const parentIdxs = [m.parentA, m.parentB].filter(x => x != null);
+        for (const pi of parentIdxs) {
+          const pel = prevMatches[pi];
+          if (!pel) continue;
+          const p = centerOf(pel);
+          const x1 = p.right, x2 = child.left;
           const xMid = (x1 + x2) / 2;
-          addPath(svg, `M ${x1} ${src.mid} H ${xMid} V ${child.mid} H ${x2}`, strokeColor);
+          addPath(svg, `M ${x1} ${p.mid} H ${xMid} V ${child.mid} H ${x2}`, strokeColor);
         }
       });
     }
@@ -1716,7 +1383,7 @@
     if (!state.teams.length && !state.bracket) { toast('Nothing to export yet'); return; }
     const payload = {
       v: 1,
-      mode: 'hybrid',
+      mode: 'classic',
       savedAt: new Date().toISOString(),
       names: $('#namesInput').value,
       teamSize: $('#teamSize').value,
@@ -1724,7 +1391,7 @@
       teams: state.teams,
       bracket: state.bracket,
     };
-    downloadBlob(JSON.stringify(payload, null, 2), `draw-bracket-hybrid-${stamp()}.json`, 'application/json');
+    downloadBlob(JSON.stringify(payload, null, 2), `draw-bracket-${stamp()}.json`, 'application/json');
     toast('Exported JSON backup');
   };
 
@@ -1732,7 +1399,7 @@
     if (!state.teams.length && !state.bracket) { toast('Nothing to export yet'); return; }
     const lines = [];
     const now = new Date();
-    lines.push('DRAW & BRACKET — Hybrid (KO + round-robin)');
+    lines.push('DRAW & BRACKET — Classic knockout');
     lines.push('Exported ' + now.toString());
     lines.push('='.repeat(64), '');
 
@@ -1753,56 +1420,24 @@
       lines.push('-'.repeat(64));
       rounds.forEach((round, rIdx) => {
         lines.push('');
-        const title = roundTitle(round, rIdx, rounds);
-        const kind = round.type === 'roundRobin' ? 'round-robin' : 'knockout';
-        lines.push(`[Round ${rIdx+1}] ${title}  (${kind})`);
-        if (round.type === 'roundRobin') {
-          round.matches.forEach((m, mIdx) => {
-            const a = m.a ? teamLabel(m.a).name : 'TBD';
-            const b = m.b ? teamLabel(m.b).name : 'TBD';
-            let outcome = '';
-            if (m.winner === 'a') outcome = `  →  WIN: ${a}`;
-            else if (m.winner === 'b') outcome = `  →  WIN: ${b}`;
-            lines.push(`  M${rIdx+1}.${mIdx+1}   ${a}   vs   ${b}${outcome}`);
-          });
-          lines.push('');
-          lines.push(`  Standings (top ${round.advancesTop} advance):`);
-          const st = computeStandings(round);
-          st.forEach((row, i) => {
-            const info = teamLabel(row.team);
-            const mark = i < round.advancesTop ? ' ✓' : '  ';
-            lines.push(`   ${mark} ${i+1}. ${info.name}  —  ${row.wins}W ${row.losses}L`);
-          });
-        } else {
-          round.matches.forEach((m, mIdx) => {
-            const a = m.a ? teamLabel(m.a).name : 'TBD';
-            const b = m.bye ? 'BYE' : (m.b ? teamLabel(m.b).name : 'TBD');
-            let outcome = '';
-            if (m.bye) outcome = '  (auto-advance)';
-            else if (m.winner === 'a') outcome = `  →  WIN: ${a}`;
-            else if (m.winner === 'b') outcome = `  →  WIN: ${b}`;
-            lines.push(`  M${rIdx+1}.${mIdx+1}   ${a}   vs   ${b}${outcome}`);
-          });
-        }
+        lines.push(`[Round ${rIdx+1}] ${roundTitle(rIdx, rounds.length)}`);
+        round.forEach((m, mIdx) => {
+          const a = m.a ? teamLabel(m.a).name : 'TBD';
+          const b = m.bye ? 'BYE' : (m.b ? teamLabel(m.b).name : 'TBD');
+          let outcome = '';
+          if (m.bye) outcome = '  (auto-advance)';
+          else if (m.winner === 'a') outcome = `  →  WIN: ${a}`;
+          else if (m.winner === 'b') outcome = `  →  WIN: ${b}`;
+          lines.push(`  M${rIdx+1}.${mIdx+1}   ${a}   vs   ${b}${outcome}`);
+        });
       });
 
-      // Champion
-      const last = rounds[rounds.length - 1];
-      let champTeam = null;
-      if (last.type === 'knockout') {
-        const final = last.matches[0];
-        if (final && final.winner) champTeam = final.winner === 'a' ? final.a : final.b;
-      } else if (last.type === 'roundRobin') {
-        const allPlayed = last.matches.every(m => m.winner);
-        if (allPlayed) {
-          const st = computeStandings(last);
-          if (st.length) champTeam = st[0].team;
-        }
-      }
+      const final = rounds[rounds.length - 1][0];
+      const champ = final && final.winner ? (final.winner === 'a' ? final.a : final.b) : null;
       lines.push('');
-      lines.push('CHAMPION: ' + (champTeam ? teamLabel(champTeam).name : '(undecided)'));
+      lines.push('CHAMPION: ' + (champ ? teamLabel(champ).name : '(undecided)'));
     }
-    downloadBlob(lines.join('\n') + '\n', `draw-bracket-hybrid-${stamp()}.txt`, 'text/plain');
+    downloadBlob(lines.join('\n') + '\n', `draw-bracket-${stamp()}.txt`, 'text/plain');
     toast('Exported text summary');
   };
 
@@ -1812,8 +1447,8 @@
       try {
         const snap = JSON.parse(String(reader.result || ''));
         if (!snap || snap.v !== 1) throw new Error('Not a v1 export file');
-        if (snap.mode && snap.mode !== 'hybrid') {
-          if (!confirm(`This backup was exported from "${snap.mode}" mode. Import into Hybrid anyway? The bracket structure may not match.`)) return;
+        if (snap.mode && snap.mode !== 'classic') {
+          if (!confirm(`This backup was exported from "${snap.mode}" mode. Import into Classic anyway? Round-robin rounds will not survive.`)) return;
         }
         if (state.teams.length || state.bracket) {
           if (!confirm('Importing will replace the current teams and bracket. Continue?')) return;
@@ -1822,10 +1457,7 @@
         if (snap.teamSize) $('#teamSize').value = snap.teamSize;
         if (typeof snap.seedShuffle === 'boolean') $('#seedShuffle').checked = snap.seedShuffle;
         state.teams   = Array.isArray(snap.teams) ? snap.teams : [];
-        // Only trust bracket if it matches the hybrid shape (rounds carry .type/.matches)
-        const b = snap.bracket;
-        const looksHybrid = b && Array.isArray(b.rounds) && b.rounds.every(r => r && r.type && Array.isArray(r.matches));
-        state.bracket = looksHybrid ? b : null;
+        state.bracket = snap.bracket || null;
         relinkBracketTeams();
         propagateWinners();
         renderTeams();
@@ -1835,7 +1467,6 @@
         const bits = [];
         if (state.teams.length) bits.push(`${state.teams.length} team${state.teams.length === 1 ? '' : 's'}`);
         if (state.bracket) bits.push('bracket');
-        else if (b) bits.push('bracket dropped (shape mismatch)');
         toast(`Imported · ${bits.join(' + ') || 'settings only'}`);
       } catch (err) {
         console.error(err);
@@ -1879,7 +1510,6 @@
   // ── Boot ─────────────────────────────────────────────────
   const restored = loadState();
   updateMeta();
-  if (state.bracket) propagateWinners();
   renderTeams();
   renderBracket();
   if (restored && (state.teams.length || state.bracket)) {

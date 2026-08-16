@@ -17,7 +17,7 @@
 
   <!-- Divider + URL -->
   <line x1="80" y1="510" x2="1120" y2="510" stroke="#B9B2A0" stroke-width="2"/>
-  <text x="80" y="565" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="22" font-weight="600" fill="#111311">mandeep-pitta.github.io/team-gen</text>
+  <text x="80" y="565" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="22" font-weight="600" fill="#111311">pmraj23.github.io</text>
   <text x="1120" y="565" font-family="ui-sans-serif, system-ui, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="3" text-anchor="end" fill="#6E706C" text-transform="uppercase">
     Runs in your browser
   </text>
