@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- The wordmark's & in vermillion on a transparent ground so it reads
+       cleanly on both light and dark browser tabs. -->
+  <text x="16" y="27" font-family="Impact, Haettenschweiler, 'Arial Narrow', Helvetica, sans-serif" font-size="34" font-weight="900" text-anchor="middle" fill="#E24A1B">&amp;</text>
+</svg>

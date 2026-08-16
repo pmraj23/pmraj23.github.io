@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#F2EFE7"/>
+  <!-- Court-green top rule so the card reads as branded, not blank. -->
+  <rect x="0" y="0" width="1200" height="14" fill="#0B4F30"/>
+
+  <!-- Wordmark -->
+  <g font-family="Impact, Haettenschweiler, 'Arial Narrow', Helvetica, sans-serif" font-weight="900" text-anchor="middle">
+    <text x="600" y="330" font-size="200" fill="#111311" letter-spacing="2">
+      DRAW <tspan fill="#E24A1B">&amp;</tspan> BRACKET
+    </text>
+  </g>
+
+  <!-- Tagline -->
+  <text x="600" y="420" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="26" font-weight="700" letter-spacing="7" text-anchor="middle" fill="#6E706C">
+    TEAM MAKER  ·  KNOCKOUT SCHEDULER  ·  HYBRID ROUND-ROBIN
+  </text>
+
+  <!-- Divider + URL -->
+  <line x1="80" y1="510" x2="1120" y2="510" stroke="#B9B2A0" stroke-width="2"/>
+  <text x="80" y="565" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="22" font-weight="600" fill="#111311">mandeep-pitta.github.io/team-gen</text>
+  <text x="1120" y="565" font-family="ui-sans-serif, system-ui, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="3" text-anchor="end" fill="#6E706C" text-transform="uppercase">
+    Runs in your browser
+  </text>
+</svg>
