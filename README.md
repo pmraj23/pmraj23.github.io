@@ -6,15 +6,17 @@ Browser-based team draw and knockout scheduler. Paste (or upload) a list of name
 
 - Classic knockout — <https://pmraj23.github.io/classic.html>
 - Hybrid mode — <https://pmraj23.github.io/hybrid.html>
+- Excel import — <https://pmraj23.github.io/excel.html>
 
-## Two modes
+## Three modes
 
 | Mode | File | What it does |
 |---|---|---|
 | **Classic** | [classic.html](classic.html) | Pure single-elimination. Odd rounds get one bye assigned at random — no positional advantage for top seeds. |
 | **Hybrid** | [hybrid.html](hybrid.html) | Round 1 is knockout. From round 2 onward, any round with an odd team count plays as a round-robin group with the top 2 advancing. Avoids compounding byes in later rounds. |
+| **Excel import** | [excel.html](excel.html) | Already drew the bracket manually? Paste the table copied from Excel and get a clickable **best-of-3** bracket. Handles `?` placeholders and numeric "winner of match N" references. Auto-appends later rounds as classic knockout. |
 
-`index.html` is a small chooser page that links to both modes. Every page's masthead also has a **Home** link back to the chooser and a link to the other mode.
+`index.html` is a small chooser page that links to all three modes. Every page's masthead also has a **Home** link back to the chooser and links to the other modes.
 
 ## Features
 

@@ -123,11 +123,12 @@
   /* Mode cards */
   .modes {
     display:grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap:22px;
     margin-bottom:60px;
   }
-  @media (max-width:820px) { .modes{ grid-template-columns:1fr } }
+  @media (max-width:1080px) { .modes{ grid-template-columns: 1fr 1fr } }
+  @media (max-width:720px) { .modes{ grid-template-columns:1fr } }
   .mode {
     background:var(--panel);
     border:1.5px solid var(--rail-strong);
@@ -155,6 +156,8 @@
   .mode.classic::before { background:var(--accent) }
   .mode.hybrid { border-color:var(--court) }
   .mode.hybrid::before { background:var(--court) }
+  .mode.excel { border-color:var(--ink) }
+  .mode.excel::before { background:var(--ink) }
 
   .mode .eyebrow {
     font-family:var(--font-mono);
@@ -170,6 +173,7 @@
   }
   .mode.classic h2 span { color:var(--accent) }
   .mode.hybrid h2 span { color:var(--court) }
+  .mode.excel h2 span { color:var(--ink) }
 
   .mode .lede {
     font-size:15.5px; color:var(--ink);
@@ -192,6 +196,7 @@
     color:var(--accent);
   }
   .mode.hybrid ul li::before { color:var(--court) }
+  .mode.excel ul li::before { color:var(--ink) }
 
   .cta-row {
     margin-top:auto;
@@ -207,6 +212,7 @@
   }
   .mode.classic .cta { background:var(--accent); color:var(--accent-ink) }
   .mode.hybrid  .cta { background:var(--court);  color:var(--court-ink) }
+  .mode.excel   .cta { background:var(--ink);    color:var(--bg) }
   .mode:hover .cta { filter:brightness(1.08) }
   .cta .arrow { font-family:var(--font-mono); font-weight:800; font-size:18px; line-height:1 }
 
@@ -289,6 +295,21 @@
         <li>Everyone plays multiple games when a group forms</li>
         <li>Standings by W–L record, seed as tiebreaker</li>
         <li>Better for small-to-mid brackets with awkward team counts</li>
+      </ul>
+      <div class="cta-row">
+        <span class="cta">Open<span class="arrow">→</span></span>
+        <span class="caveat">Runs on this device</span>
+      </div>
+    </a>
+
+    <a class="mode excel" href="excel.html">
+      <div class="eyebrow">Mode 03 · Excel import · best-of-3</div>
+      <h2>Excel <span>Import</span></h2>
+      <p class="lede">Already drew the bracket by hand? Paste the table from Excel and get a clickable best-of-3 bracket. Auto-appends later rounds as classic knockout.</p>
+      <ul>
+        <li>Handles multi-section paste — Initial Round, Quarter Final, Semi Final, Final</li>
+        <li>Resolves <code style="font-family:var(--font-mono);font-size:.85em">?</code> placeholders and numeric "winner of match N" refs</li>
+        <li>Click G1 / G2 / G3 per side — first to 2 games wins the series</li>
       </ul>
       <div class="cta-row">
         <span class="cta">Open<span class="arrow">→</span></span>

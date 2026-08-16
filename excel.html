@@ -1,0 +1,1061 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8" />
+<title>Draw & Bracket · Excel import</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Paste a partially-progressed tournament bracket from Excel and click through best-of-3 matches to advance winners. Handles ? placeholders and numeric winner-of-N references. Runs entirely in your browser." />
+<meta name="theme-color" content="#F2EFE7" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0E0F0C" media="(prefers-color-scheme: dark)" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="favicon.svg" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Draw & Bracket" />
+<meta property="og:title" content="Draw & Bracket — Excel import" />
+<meta property="og:description" content="Paste a pre-drawn bracket from Excel, click through best-of-3 matches. All in-browser." />
+<meta property="og:url" content="https://pmraj23.github.io/excel.html" />
+<meta property="og:image" content="https://pmraj23.github.io/og-image.svg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Draw & Bracket — Excel import" />
+<meta name="twitter:description" content="Paste a pre-drawn bracket, click through best-of-3 matches. All in-browser." />
+<style>
+  :root{
+    --bg:#F2EFE7;
+    --panel:#EDE9DE;
+    --ink:#111311;
+    --muted:#6E706C;
+    --rail:#D5D0C0;
+    --rail-strong:#B9B2A0;
+    --accent:#E24A1B;
+    --accent-ink:#FFFFFF;
+    --court:#0B4F30;
+    --court-ink:#F2EFE7;
+    --danger:#B3271A;
+    --good:#0B6E3A;
+    --shadow: 0 1px 0 rgba(0,0,0,.04), 0 8px 24px -12px rgba(20,20,15,.18);
+    --radius:6px;
+    --radius-lg:10px;
+
+    --font-display:"Impact","Haettenschweiler","Oswald","Arial Narrow",Helvetica,sans-serif;
+    --font-body:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono","Menlo","Consolas",monospace;
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme: dark){
+      --bg:#0E0F0C;
+      --panel:#171814;
+      --ink:#F1EDE1;
+      --muted:#8E8F87;
+      --rail:#2A2B25;
+      --rail-strong:#3E3F38;
+      --accent:#FF6B33;
+      --accent-ink:#0E0F0C;
+      --court:#3E8B67;
+      --court-ink:#0E0F0C;
+      --danger:#E2604F;
+      --good:#4CA37A;
+      --shadow: 0 1px 0 rgba(0,0,0,.4), 0 12px 30px -14px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0E0F0C;
+    --panel:#171814;
+    --ink:#F1EDE1;
+    --muted:#8E8F87;
+    --rail:#2A2B25;
+    --rail-strong:#3E3F38;
+    --accent:#FF6B33;
+    --accent-ink:#0E0F0C;
+    --court:#3E8B67;
+    --court-ink:#0E0F0C;
+    --danger:#E2604F;
+    --good:#4CA37A;
+    --shadow: 0 1px 0 rgba(0,0,0,.4), 0 12px 30px -14px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-size:15px;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    font-variant-numeric:tabular-nums;
+  }
+  .page{max-width:1240px; margin:0 auto; padding:32px 28px 96px}
+
+  /* Masthead */
+  .masthead{
+    display:grid; grid-template-columns:1fr auto;
+    align-items:end; gap:20px;
+    padding-bottom:20px;
+    border-bottom:2px solid var(--ink);
+    margin-bottom:32px;
+  }
+  .logo{
+    font-family:var(--font-display); font-weight:900;
+    letter-spacing:.01em; line-height:.85;
+    font-size:clamp(48px, 8vw, 92px);
+    text-transform:uppercase; color:var(--ink);
+    display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
+  }
+  .logo .amp{color:var(--accent)}
+  .logo small{
+    font-family:var(--font-body); font-weight:600;
+    font-size:11px; letter-spacing:.24em; text-transform:uppercase;
+    color:var(--muted); align-self:flex-end; padding-bottom:6px;
+  }
+  .mode-nav{
+    display:flex; gap:10px; align-items:center;
+    flex-wrap:wrap; justify-content:flex-end;
+  }
+  .mode-link{
+    font-family:var(--font-body); font-size:11px;
+    letter-spacing:.18em; text-transform:uppercase; font-weight:700;
+    color:var(--accent); text-decoration:none;
+    padding:8px 12px;
+    border:1.5px solid var(--accent);
+    border-radius:999px;
+    background:transparent;
+    white-space:nowrap;
+    cursor:pointer;
+  }
+  .mode-link:hover{background:var(--accent); color:var(--accent-ink)}
+  .mode-link.ghost{color:var(--ink); border-color:var(--ink)}
+  .mode-link.ghost:hover{background:var(--ink); color:var(--bg)}
+  .backup-nav{
+    display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+    padding-left:12px; margin-left:4px;
+    border-left:1px solid var(--rail-strong);
+  }
+  .backup-nav .label{
+    font-family:var(--font-body); font-size:10px;
+    letter-spacing:.22em; text-transform:uppercase;
+    font-weight:700; color:var(--muted);
+  }
+  .theme-toggle{
+    font-family:var(--font-body); font-size:11px;
+    letter-spacing:.18em; text-transform:uppercase; font-weight:600;
+    background:transparent; border:1.5px solid var(--ink); color:var(--ink);
+    padding:8px 12px; border-radius:999px; cursor:pointer;
+  }
+  .theme-toggle:hover{background:var(--ink); color:var(--bg)}
+
+  /* Slabs */
+  .slab{
+    background:var(--panel);
+    border:1px solid var(--rail);
+    border-radius:var(--radius-lg);
+    padding:26px 26px 28px;
+    margin-bottom:28px;
+    box-shadow:var(--shadow);
+  }
+  .slab-head{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:20px;
+    margin-bottom:20px; padding-bottom:14px;
+    border-bottom:1px dashed var(--rail-strong);
+  }
+  .slab-head h2{
+    font-family:var(--font-display); font-weight:900;
+    text-transform:uppercase; letter-spacing:.02em;
+    font-size:26px; line-height:1; margin:0;
+    display:flex; align-items:baseline; gap:12px;
+  }
+  .slab-head h2 .num{
+    color:var(--accent);
+    font-size:.62em;
+    font-family:var(--font-mono); font-weight:700; letter-spacing:0;
+    background:transparent; border:1.5px solid var(--accent);
+    padding:2px 6px; border-radius:4px; transform:translateY(-2px);
+  }
+  .slab-head .hint{ color:var(--muted); font-size:12.5px; letter-spacing:.02em }
+
+  /* Import section */
+  .paste-grid{
+    display:grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr);
+    gap:22px;
+  }
+  @media (max-width:820px){ .paste-grid{grid-template-columns:1fr} }
+  textarea.paste{
+    width:100%;
+    min-height:280px;
+    resize:vertical;
+    font-family:var(--font-mono);
+    font-size:13px;
+    line-height:1.55;
+    padding:14px;
+    background:var(--bg);
+    color:var(--ink);
+    border:1.5px solid var(--rail-strong);
+    border-radius:var(--radius);
+    outline:none;
+    white-space:pre;
+  }
+  textarea.paste:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(226,74,27,.15)}
+  .instructions{
+    font-size:13.5px; color:var(--ink); line-height:1.55;
+  }
+  .instructions h3{
+    font-family:var(--font-body); font-weight:800;
+    font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--accent); margin:0 0 6px;
+  }
+  .instructions ol{ margin:0 0 14px 20px; padding:0 }
+  .instructions ol li{ margin-bottom:4px }
+  .instructions code{
+    font-family:var(--font-mono); font-size:12.5px;
+    background:var(--bg); padding:1px 5px; border-radius:3px;
+    border:1px solid var(--rail);
+  }
+  .instructions .example{
+    font-family:var(--font-mono); font-size:11.5px;
+    background:var(--bg);
+    border:1px solid var(--rail-strong);
+    border-radius:var(--radius);
+    padding:10px 12px;
+    white-space:pre;
+    overflow-x:auto;
+    color:var(--muted);
+    line-height:1.5;
+    margin-top:8px;
+  }
+
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px }
+  .btn{
+    font-family:var(--font-display); font-weight:900;
+    text-transform:uppercase; letter-spacing:.06em; font-size:16px;
+    padding:11px 18px;
+    border:none; border-radius:var(--radius);
+    cursor:pointer;
+    background:var(--accent); color:var(--accent-ink);
+  }
+  .btn:hover{ filter:brightness(1.08) }
+  .btn.secondary{
+    background:transparent;
+    color:var(--ink);
+    border:1.5px solid var(--ink);
+    font-size:14px;
+    padding:10px 16px;
+  }
+  .btn.secondary:hover{ background:var(--ink); color:var(--bg) }
+  .btn.danger{
+    background:transparent; color:var(--danger); border:1.5px solid var(--danger);
+    font-size:14px; padding:10px 16px;
+  }
+  .btn.danger:hover{ background:var(--danger); color:var(--bg) }
+
+  .error{
+    margin-top:14px;
+    padding:12px 14px;
+    background:rgba(179,39,26,.08);
+    border:1px solid var(--danger);
+    border-radius:var(--radius);
+    color:var(--danger);
+    font-size:13.5px;
+    display:none;
+    white-space:pre-wrap;
+  }
+  .error.show{display:block}
+
+  /* Bracket */
+  .bracket-wrap{ overflow-x:auto }
+  .bracket{
+    display:flex;
+    gap:44px;
+    padding:8px 4px 4px;
+    min-width:100%;
+  }
+  .round{
+    flex:0 0 auto;
+    display:flex; flex-direction:column;
+    min-width:280px;
+    max-width:320px;
+  }
+  .round-head{
+    font-family:var(--font-display); font-weight:900;
+    text-transform:uppercase; letter-spacing:.03em;
+    font-size:18px; line-height:1;
+    padding:8px 10px;
+    border-bottom:2px solid var(--ink);
+    margin-bottom:16px;
+    display:flex; justify-content:space-between; align-items:baseline; gap:8px;
+  }
+  .round-head .count{
+    font-family:var(--font-mono); font-weight:700;
+    font-size:11px; letter-spacing:.06em;
+    color:var(--muted);
+  }
+  .matches{
+    display:flex; flex-direction:column;
+    gap:16px;
+    justify-content:space-around;
+    height:100%;
+  }
+
+  .match{
+    background:var(--bg);
+    border:1.5px solid var(--rail-strong);
+    border-radius:var(--radius);
+    padding:8px 10px 10px;
+    box-shadow:var(--shadow);
+    position:relative;
+    transition:border-color .12s ease;
+  }
+  .match.done{ border-color:var(--good) }
+  .match .match-num{
+    position:absolute;
+    top:-9px; left:10px;
+    font-family:var(--font-mono); font-weight:700;
+    font-size:10px; letter-spacing:.08em;
+    background:var(--panel);
+    padding:1px 6px;
+    border:1px solid var(--rail-strong);
+    border-radius:3px;
+    color:var(--muted);
+  }
+  .side{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    align-items:center;
+    gap:8px;
+    padding:6px 4px;
+    border-bottom:1px dashed var(--rail);
+  }
+  .side:last-child{ border-bottom:none }
+  .side .name{
+    font-size:13.5px;
+    line-height:1.35;
+    color:var(--ink);
+    word-break:break-word;
+    padding-right:4px;
+  }
+  .side .name.tbd{ color:var(--muted); font-style:italic }
+  .side .name.ref{ color:var(--court); font-family:var(--font-mono); font-size:12.5px }
+  .side .name.editable{ cursor:text }
+  .side .name.editable:hover{ text-decoration:underline dotted var(--accent); text-underline-offset:3px }
+  .side.winner .name{ color:var(--good); font-weight:700 }
+  .side.loser .name{ color:var(--muted); text-decoration:line-through }
+
+  .games{
+    display:flex; gap:4px;
+  }
+  .gbox{
+    width:22px; height:22px;
+    border:1.5px solid var(--rail-strong);
+    border-radius:4px;
+    background:transparent;
+    cursor:pointer;
+    font-family:var(--font-mono); font-weight:800;
+    font-size:11px;
+    color:var(--muted);
+    display:grid; place-items:center;
+    padding:0;
+    line-height:1;
+  }
+  .gbox:hover:not(:disabled){ border-color:var(--accent); color:var(--accent) }
+  .gbox.won{
+    background:var(--good);
+    border-color:var(--good);
+    color:var(--court-ink);
+  }
+  .gbox.lost{
+    background:transparent;
+    border-color:var(--rail);
+    color:var(--rail-strong);
+  }
+  .gbox:disabled{ cursor:not-allowed }
+
+  .note{
+    margin-top:8px;
+    padding:6px 8px;
+    background:var(--panel);
+    border-left:2px solid var(--court);
+    font-family:var(--font-mono);
+    font-size:11.5px;
+    color:var(--muted);
+    line-height:1.4;
+    border-radius:2px;
+    word-break:break-word;
+  }
+  .note.editable{ cursor:text }
+
+  .champion{
+    margin-top:12px;
+    padding:14px 16px;
+    background:var(--accent);
+    color:var(--accent-ink);
+    border-radius:var(--radius);
+    font-family:var(--font-display);
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    font-size:20px;
+    text-align:center;
+    line-height:1.1;
+  }
+  .champion .label{
+    display:block;
+    font-family:var(--font-body); font-size:10px;
+    letter-spacing:.24em; font-weight:700; opacity:.9;
+    margin-bottom:4px;
+  }
+
+  .empty{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--muted);
+    font-size:14px;
+  }
+  .empty h3{
+    font-family:var(--font-display); font-weight:900;
+    text-transform:uppercase; letter-spacing:.03em;
+    font-size:22px; margin:0 0 8px; color:var(--ink);
+  }
+
+  .stats{
+    display:flex; gap:22px; flex-wrap:wrap;
+    font-family:var(--font-mono); font-size:12px;
+    color:var(--muted); letter-spacing:.02em;
+  }
+  .stats span b{ color:var(--ink); font-weight:800 }
+
+  @media (max-width:640px){
+    .masthead{ grid-template-columns:1fr }
+    .mode-nav{ justify-content:flex-start }
+    .backup-nav{ padding-left:0; margin-left:0; border-left:none; padding-top:8px; border-top:1px solid var(--rail-strong); width:100% }
+  }
+</style>
+
+<div class="page">
+  <header class="masthead">
+    <div class="logo">
+      <span>Draw</span><span class="amp">&amp;</span><span>Bracket</span>
+      <small>Excel import · best-of-3 · in-browser</small>
+    </div>
+    <nav class="mode-nav">
+      <a href="./" class="mode-link ghost">← Home</a>
+      <a href="classic.html" class="mode-link">Classic knockout →</a>
+      <a href="hybrid.html" class="mode-link">Hybrid mode →</a>
+      <div class="backup-nav">
+        <span class="label">Backup</span>
+        <button class="mode-link ghost" id="exportJson" type="button">Export JSON</button>
+        <button class="mode-link ghost" id="exportText" type="button">Export text</button>
+        <label class="mode-link ghost" for="importFile">Import</label>
+        <input id="importFile" type="file" accept="application/json,.json" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0" />
+      </div>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle color theme">Dark</button>
+    </nav>
+  </header>
+
+  <section class="slab">
+    <div class="slab-head">
+      <h2><span class="num">01</span> Paste from Excel</h2>
+      <span class="hint">TSV format — select cells in Excel, Cmd+C, paste here</span>
+    </div>
+
+    <div class="paste-grid">
+      <div>
+        <textarea class="paste" id="pasteArea" placeholder="Paste your bracket here — rows with tab-separated columns:&#10;Match#&#9;Team A&#9;vs&#9;Team B&#9;Note (optional)&#10;&#10;Blank rows separate rounds. Section headers like &quot;Initial Round&quot; / &quot;Quarter Final&quot; are auto-detected."></textarea>
+        <div class="btn-row">
+          <button class="btn" id="parseBtn" type="button">Parse & build bracket</button>
+          <button class="btn secondary" id="loadSample" type="button">Load sample</button>
+          <button class="btn danger" id="clearAll" type="button">Clear everything</button>
+        </div>
+        <div class="error" id="errBox"></div>
+      </div>
+
+      <aside class="instructions">
+        <h3>Format</h3>
+        <ol>
+          <li>Select the whole table in Excel (including header rows) and copy.</li>
+          <li>Paste here. Columns should be tab-separated (Excel does this automatically).</li>
+          <li>Each round starts with a header row where column 2 is <code>Initial Round</code>, <code>Quarter Final</code>, <code>Semi Final</code>, <code>Final</code>, or <code>Round N</code>.</li>
+          <li>Match rows: <code>Match#</code>, <code>Team A</code>, <code>vs</code>, <code>Team B</code>, <code>Note</code>.</li>
+          <li>Use <code>?</code> for a TBD slot, or a number like <code>4</code> meaning "winner of match 4 in the previous round".</li>
+        </ol>
+
+        <h3>Best-of-3</h3>
+        <p style="margin:0 0 10px">Each match is a series of up to 3 games. Click the game boxes (G1 / G2 / G3) on the winning side of a match to record games. Whoever wins 2 games first advances.</p>
+
+        <h3>Rounds after your paste</h3>
+        <p style="margin:0 0 10px">Later rounds you didn't include are auto-appended as classic knockout — one match per pair — until a single Final remains.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="slab" id="bracketSlab">
+    <div class="slab-head">
+      <h2><span class="num">02</span> Bracket</h2>
+      <div class="stats" id="stats"></div>
+    </div>
+    <div id="bracketHost"></div>
+  </section>
+</div>
+
+<script>
+(() => {
+  // ── State & storage ──────────────────────────────────────
+  const STORAGE = 'draw-bracket-excel:v1';
+  const el = (id) => document.getElementById(id);
+  const $paste = el('pasteArea');
+  const $err = el('errBox');
+  const $bracketHost = el('bracketHost');
+  const $stats = el('stats');
+
+  let state = null; // { v, savedAt, source, rounds:[{name, matches:[...]}] }
+
+  const emptyState = () => ({ v: 1, savedAt: null, source: '', rounds: [] });
+
+  const save = () => {
+    if (!state) return;
+    state.savedAt = new Date().toISOString();
+    try { localStorage.setItem(STORAGE, JSON.stringify(state)); } catch(_) {}
+  };
+  const load = () => {
+    try {
+      const raw = localStorage.getItem(STORAGE);
+      if (!raw) return null;
+      const p = JSON.parse(raw);
+      if (!p || !p.rounds) return null;
+      return p;
+    } catch(_){ return null; }
+  };
+
+  // ── Theme toggle ─────────────────────────────────────────
+  (() => {
+    const toggle = el('themeToggle');
+    const apply = (mode) => {
+      if (mode === 'system') document.documentElement.removeAttribute('data-theme');
+      else document.documentElement.setAttribute('data-theme', mode);
+      const isDark = mode === 'dark' ||
+        (mode !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
+      toggle.textContent = isDark ? 'Light' : 'Dark';
+    };
+    let mode = 'system';
+    toggle.addEventListener('click', () => {
+      mode = (mode === 'dark') ? 'light' : 'dark';
+      apply(mode);
+    });
+    apply('system');
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (mode === 'system') apply('system');
+    });
+  })();
+
+  // ── Parser ───────────────────────────────────────────────
+  // Section headers recognized:
+  const HEADER_MAP = [
+    { rx: /^initial round$/i,   canonical: 'Initial Round' },
+    { rx: /^first round$/i,     canonical: 'First Round' },
+    { rx: /^round\s*1$/i,       canonical: 'Round 1' },
+    { rx: /^round\s*of\s*16$/i, canonical: 'Round of 16' },
+    { rx: /^pre[- ]?quarter/i,  canonical: 'Pre-Quarter Final' },
+    { rx: /^quarter[- ]?final/i,canonical: 'Quarter Final' },
+    { rx: /^semi[- ]?final/i,   canonical: 'Semi Final' },
+    { rx: /^final$/i,           canonical: 'Final' },
+    { rx: /^round\s*\d+$/i,     canonical: null }, // dynamic
+  ];
+  const canonicalHeader = (s) => {
+    const t = (s || '').trim();
+    for (const h of HEADER_MAP) {
+      if (h.rx.test(t)) return h.canonical || t.replace(/\s+/g,' ').replace(/^./, c => c.toUpperCase());
+    }
+    return null;
+  };
+  const isMatchNumHeader = (v) => /^match\s*#?$/i.test((v||'').trim());
+
+  // Parse a raw TSV paste into sections.
+  const parsePaste = (raw) => {
+    const lines = raw.replace(/\r\n?/g,'\n').split('\n');
+    const sections = []; // [{ name, rows: [{num, a, b, note}] }]
+    let current = null;
+
+    for (const rawLine of lines) {
+      if (rawLine.trim() === '') { continue; }
+      const cols = rawLine.split('\t').map(c => c.trim());
+      // Skip a header row like:  Match# | Section-Name | ...
+      if (isMatchNumHeader(cols[0])) {
+        const h = canonicalHeader(cols[1]);
+        if (h) { current = { name: h, rows: [] }; sections.push(current); continue; }
+      }
+      // Section header on its own — first col is a section name.
+      const soloHeader = canonicalHeader(cols[0]);
+      if (soloHeader && !cols[2]) { current = { name: soloHeader, rows: [] }; sections.push(current); continue; }
+
+      if (!current) {
+        // No section yet — try to infer as Initial Round
+        current = { name: 'Initial Round', rows: [] };
+        sections.push(current);
+      }
+
+      // Detect the "vs" column. Standard: [num, teamA, vs, teamB, note]
+      let num = '', a = '', b = '', note = '';
+      const vsIdx = cols.findIndex(c => /^vs\.?$/i.test(c));
+      if (vsIdx >= 1) {
+        num = cols[0] || '';
+        a = cols[vsIdx - 1] || '';
+        b = cols[vsIdx + 1] || '';
+        note = (cols.slice(vsIdx + 2).join(' ') || '').trim();
+      } else if (cols.length >= 2) {
+        // Fallback: assume [num, a, b, note?] with no "vs"
+        num = cols[0] || '';
+        a = cols[1] || '';
+        b = cols[2] || '';
+        note = (cols.slice(3).join(' ') || '').trim();
+      } else {
+        continue;
+      }
+      if (!a && !b) continue;
+      current.rows.push({ num, a, b, note });
+    }
+    return sections.filter(s => s.rows.length > 0);
+  };
+
+  // Interpret a slot string: real name / '?' / numeric ref
+  const interpretSlot = (raw) => {
+    const s = (raw || '').trim();
+    if (!s || s === '?' || s === '-' || /^tbd$/i.test(s)) return { kind: 'tbd', name: null };
+    if (/^\d+$/.test(s)) return { kind: 'ref', matchNum: parseInt(s, 10), name: null };
+    return { kind: 'name', name: s };
+  };
+
+  // Build the state.rounds structure from parsed sections.
+  const buildState = (sections, sourceText) => {
+    if (sections.length === 0) throw new Error('No sections found. Make sure your paste has at least one section header (e.g. "Initial Round") and match rows.');
+
+    const rounds = sections.map((sec, roundIdx) => {
+      const matches = sec.rows.map((row, i) => {
+        const num = /^\d+$/.test(row.num) ? parseInt(row.num, 10) : (i + 1);
+        const aSlot = interpretSlot(row.a);
+        const bSlot = interpretSlot(row.b);
+        return {
+          idx: i,
+          num,
+          a: aSlot,
+          b: bSlot,
+          note: row.note || '',
+          games: [null, null, null], // 'a' | 'b' | null
+          winner: null,               // 'a' | 'b' | null (computed)
+        };
+      });
+      return { name: sec.name, matches };
+    });
+
+    // Auto-append later rounds until we have a Final.
+    let last = rounds[rounds.length - 1];
+    let guard = 20;
+    while (last.matches.length > 1 && guard-- > 0) {
+      const nextCount = Math.ceil(last.matches.length / 2);
+      const namePool = ['Final', 'Semi Final', 'Quarter Final', 'Pre-Quarter Final', 'Round of 16', 'Round of 32'];
+      // Pick the highest-tier name that fits the count.
+      let name;
+      if (nextCount === 1) name = 'Final';
+      else if (nextCount === 2) name = 'Semi Final';
+      else if (nextCount === 4) name = 'Quarter Final';
+      else if (nextCount === 8) name = 'Pre-Quarter Final';
+      else if (nextCount === 16) name = 'Round of 32';
+      else name = `Round of ${nextCount * 2}`;
+      // Avoid duplicating an existing name.
+      if (rounds.some(r => r.name === name)) name = `Round ${rounds.length + 1}`;
+      const nextMatches = [];
+      for (let i = 0; i < nextCount; i++) {
+        nextMatches.push({
+          idx: i,
+          num: i + 1,
+          a: { kind: 'ref', matchNum: (i * 2) + 1, name: null },
+          b: (i * 2 + 1) < last.matches.length
+              ? { kind: 'ref', matchNum: (i * 2) + 2, name: null }
+              : { kind: 'tbd', name: null }, // odd → bye
+          note: '',
+          games: [null, null, null],
+          winner: null,
+        });
+      }
+      rounds.push({ name, matches: nextMatches });
+      last = rounds[rounds.length - 1];
+    }
+
+    return { v: 1, savedAt: null, source: sourceText, rounds };
+  };
+
+  // ── Winner resolution ────────────────────────────────────
+  const computeWinner = (m) => {
+    let ga = 0, gb = 0;
+    for (const g of m.games) {
+      if (g === 'a') ga++;
+      else if (g === 'b') gb++;
+    }
+    if (ga >= 2) return 'a';
+    if (gb >= 2) return 'b';
+    return null;
+  };
+
+  const slotName = (slot, prevRound) => {
+    if (!slot) return null;
+    if (slot.kind === 'name') return slot.name;
+    if (slot.kind === 'tbd') return null;
+    if (slot.kind === 'ref' && prevRound) {
+      const parent = prevRound.matches.find(m => m.num === slot.matchNum);
+      if (!parent) return null;
+      const w = computeWinner(parent);
+      if (!w) return null;
+      const pSlot = w === 'a' ? parent.a : parent.b;
+      return slotName(pSlot, null); // parent's slot must already be a name at this point in most cases
+    }
+    return null;
+  };
+
+  // Resolve refs upward: fill numeric refs with winners from previous rounds where possible.
+  // We recompute each render — no need to mutate.
+  const resolvedSlot = (slot, roundIdx) => {
+    if (!slot) return { name: null, kind: 'tbd' };
+    if (slot.kind === 'name') return { name: slot.name, kind: 'name' };
+    if (slot.kind === 'tbd') return { name: null, kind: 'tbd' };
+    if (slot.kind === 'ref') {
+      // Walk backward through rounds to find match #matchNum with a winner
+      for (let r = roundIdx - 1; r >= 0; r--) {
+        const round = state.rounds[r];
+        const parent = round.matches.find(m => m.num === slot.matchNum);
+        if (parent) {
+          parent.winner = computeWinner(parent);
+          if (parent.winner) {
+            const pSlot = parent.winner === 'a' ? parent.a : parent.b;
+            const resolved = resolvedSlot(pSlot, r);
+            return resolved.name ? resolved : { name: null, kind: 'ref', ref: slot.matchNum };
+          }
+          return { name: null, kind: 'ref', ref: slot.matchNum };
+        }
+      }
+      return { name: null, kind: 'ref', ref: slot.matchNum };
+    }
+    return { name: null, kind: 'tbd' };
+  };
+
+  // ── Rendering ────────────────────────────────────────────
+  const renderEmpty = () => {
+    $bracketHost.innerHTML = `
+      <div class="empty">
+        <h3>No bracket yet</h3>
+        <div>Paste your Excel table above and click <b>Parse &amp; build bracket</b>.</div>
+      </div>`;
+    $stats.textContent = '';
+  };
+
+  const renderStats = () => {
+    if (!state || !state.rounds.length) { $stats.textContent = ''; return; }
+    let totalMatches = 0, played = 0, decided = 0, games = 0;
+    for (const r of state.rounds) {
+      totalMatches += r.matches.length;
+      for (const m of r.matches) {
+        m.winner = computeWinner(m);
+        const gp = m.games.filter(g => g !== null).length;
+        if (gp > 0) played++;
+        games += gp;
+        if (m.winner) decided++;
+      }
+    }
+    $stats.innerHTML = `
+      <span>Rounds <b>${state.rounds.length}</b></span>
+      <span>Matches <b>${decided}</b>/<b>${totalMatches}</b> decided</span>
+      <span>Games played <b>${games}</b></span>
+    `;
+  };
+
+  const renderMatchSide = (match, side, roundIdx, isDecided) => {
+    const slot = side === 'a' ? match.a : match.b;
+    const resolved = resolvedSlot(slot, roundIdx);
+    const gamesWon = match.games.filter(g => g === side).length;
+
+    // Slots that were originally 'name' can be edited; refs auto-resolve so we don't hijack them,
+    // but a TBD (?) slot IS editable so the user can fill it in later.
+    const editable = slot.kind === 'name' || slot.kind === 'tbd';
+    const nameCls =
+      resolved.name ? 'name' + (editable ? ' editable' : '') :
+      (resolved.kind === 'ref' ? 'name ref' : 'name tbd editable');
+    const nameText =
+      resolved.name ? escapeHtml(resolved.name) :
+      (resolved.kind === 'ref' ? `Winner of Match ${resolved.ref}` : 'TBD');
+    const editAttrs = editable ? ` data-editname="1" data-r="${roundIdx}" data-m="${match.idx}" data-s="${side}"` : '';
+
+    const sideCls =
+      match.winner === side ? 'side winner' :
+      (match.winner && match.winner !== side ? 'side loser' : 'side');
+
+    // Games controls — G1, G2, G3
+    const gboxes = [0,1,2].map(gi => {
+      const g = match.games[gi];
+      let cls = 'gbox';
+      let label = `G${gi+1}`;
+      if (g === side) { cls += ' won'; }
+      else if (g && g !== side) { cls += ' lost'; }
+      // Only disable when this side has no resolved team to credit.
+      const disabled = !resolved.name;
+      return `<button type="button" class="${cls}" data-r="${roundIdx}" data-m="${match.idx}" data-s="${side}" data-g="${gi}"${disabled ? ' disabled' : ''} title="${g === side ? 'Click to clear this game' : (g ? 'Reassign game to this side' : 'Mark this side as winner of game ' + (gi+1))}">${label}</button>`;
+    }).join('');
+
+    return `
+      <div class="${sideCls}">
+        <span class="${nameCls}"${editAttrs} title="${editable ? 'Click to rename' : ''}">${nameText}${gamesWon ? ` <b style="color:var(--good)">(${gamesWon})</b>` : ''}</span>
+        <span class="games">${gboxes}</span>
+      </div>
+    `;
+  };
+
+  const escapeHtml = (s) => (s || '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+
+  const render = () => {
+    if (!state || state.rounds.length === 0) { renderEmpty(); return; }
+
+    // Compute winners top-down first
+    for (const r of state.rounds) for (const m of r.matches) m.winner = computeWinner(m);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'bracket-wrap';
+    const bracket = document.createElement('div');
+    bracket.className = 'bracket';
+
+    state.rounds.forEach((round, ri) => {
+      const col = document.createElement('div');
+      col.className = 'round';
+      const decidedCount = round.matches.filter(m => m.winner).length;
+      col.innerHTML = `
+        <div class="round-head">
+          <span>${escapeHtml(round.name)}</span>
+          <span class="count">${decidedCount}/${round.matches.length}</span>
+        </div>
+        <div class="matches"></div>
+      `;
+      const matchesHost = col.querySelector('.matches');
+      round.matches.forEach((m) => {
+        const done = !!m.winner;
+        const noteHtml = m.note ? `<div class="note editable" data-r="${ri}" data-m="${m.idx}" title="Click to edit note">${escapeHtml(m.note)}</div>` : '';
+        const mDiv = document.createElement('div');
+        mDiv.className = 'match' + (done ? ' done' : '');
+        mDiv.innerHTML = `
+          <span class="match-num">M${m.num}</span>
+          ${renderMatchSide(m, 'a', ri, done)}
+          ${renderMatchSide(m, 'b', ri, done)}
+          ${noteHtml}
+        `;
+        matchesHost.appendChild(mDiv);
+      });
+      bracket.appendChild(col);
+    });
+
+    // Champion strip
+    const finalRound = state.rounds[state.rounds.length - 1];
+    const finalMatch = finalRound.matches[0];
+    if (finalMatch && finalMatch.winner) {
+      const champSlot = finalMatch.winner === 'a' ? finalMatch.a : finalMatch.b;
+      const resolved = resolvedSlot(champSlot, state.rounds.length - 1);
+      if (resolved.name) {
+        const champ = document.createElement('div');
+        champ.className = 'champion';
+        champ.innerHTML = `<span class="label">Champion</span>${escapeHtml(resolved.name)}`;
+        // Append inside final round column
+        bracket.lastChild.appendChild(champ);
+      }
+    }
+
+    wrap.appendChild(bracket);
+    $bracketHost.innerHTML = '';
+    $bracketHost.appendChild(wrap);
+    renderStats();
+    save();
+  };
+
+  // ── Interactions ─────────────────────────────────────────
+  $bracketHost.addEventListener('click', (e) => {
+    const btn = e.target.closest('.gbox');
+    if (btn) {
+      const r = +btn.dataset.r, m = +btn.dataset.m, s = btn.dataset.s, g = +btn.dataset.g;
+      const match = state.rounds[r].matches[m];
+      // Toggle: clicking a game on the winning side of a game clears if already set, else set.
+      if (match.games[g] === s) match.games[g] = null;
+      else match.games[g] = s;
+      // Recompute this match's winner and clear downstream state that depended on old winner
+      match.winner = computeWinner(match);
+      render();
+      return;
+    }
+    const noteEl = e.target.closest('.note.editable');
+    if (noteEl) {
+      const r = +noteEl.dataset.r, m = +noteEl.dataset.m;
+      const match = state.rounds[r].matches[m];
+      const cur = match.note || '';
+      const next = prompt('Edit note (blank to clear):', cur);
+      if (next !== null) {
+        match.note = next.trim();
+        render();
+      }
+      return;
+    }
+    const nameEl = e.target.closest('[data-editname="1"]');
+    if (nameEl) {
+      const r = +nameEl.dataset.r, m = +nameEl.dataset.m, s = nameEl.dataset.s;
+      const match = state.rounds[r].matches[m];
+      const slot = s === 'a' ? match.a : match.b;
+      const cur = slot.kind === 'name' ? (slot.name || '') : '';
+      const next = prompt('Team name (blank to clear back to TBD):', cur);
+      if (next === null) return;
+      const trimmed = next.trim();
+      if (!trimmed) {
+        slot.kind = 'tbd'; slot.name = null; slot.matchNum = undefined;
+      } else {
+        slot.kind = 'name'; slot.name = trimmed; slot.matchNum = undefined;
+      }
+      render();
+      return;
+    }
+  });
+
+  // ── Parse button ─────────────────────────────────────────
+  const showErr = (msg) => {
+    $err.textContent = msg;
+    $err.classList.add('show');
+  };
+  const hideErr = () => { $err.classList.remove('show'); $err.textContent = ''; };
+
+  el('parseBtn').addEventListener('click', () => {
+    hideErr();
+    const raw = $paste.value;
+    if (!raw.trim()) { showErr('Nothing to parse — paste your bracket first.'); return; }
+    try {
+      const sections = parsePaste(raw);
+      state = buildState(sections, raw);
+      render();
+    } catch (e) {
+      showErr('Parse failed: ' + (e && e.message ? e.message : String(e)));
+    }
+  });
+
+  el('clearAll').addEventListener('click', () => {
+    if (!confirm('Clear the bracket and paste? This cannot be undone (unless you have exported JSON).')) return;
+    state = null;
+    localStorage.removeItem(STORAGE);
+    $paste.value = '';
+    hideErr();
+    renderEmpty();
+  });
+
+  // ── Sample ───────────────────────────────────────────────
+  const SAMPLE = [
+    'Match#\tInitial Round\t\t\t',
+    '1\tPrabhu & Star Babu Kancharla\tvs\tSundeep kolluri & Achan Valluri\t',
+    '2\tAugustine Gidla & Enoch Abraham Ediga\tvs\tRavi Yenugu & Suchith Chunduri\t',
+    '3\tJoeshi & Abhishek\tvs\tNaveen Patchava & Praveen Vemula\t',
+    '4\tJay Kavala & Yeswanth Kumar Vinnakota\tvs\tVijay Nagaram & Anoop\t1 Game Yet to play ( Score 1:1)',
+    '5\tVenkat vankayala & Sandeep Kantimahanthi\tvs\tKiran Meesala & Ravi Teja\t',
+    '6\tRakesh Boddu & Sriharsha\tvs\tAjay Kumar & Rohit\t2 Games Yet to Play',
+    '7\tNikhil Kotha & Chaitanya\tvs\tHarish Reddy & Karthik\t',
+    '8\tSurya Prakash & Manoj\tvs\tVarun & Sagar\t',
+    '',
+    'Match#\tQuarter Final\t\t\t',
+    '1\tAugustine Gidla & Enoch Abraham Ediga\tvs\tJoeshi & Abhishek\t',
+    '2\tVenkat vankayala & Sandeep Kantimahanthi\tvs\t?\t',
+    '3\t?\tvs\tHarish Reddy & Karthik\t',
+    '4\tPrabhu & Star Babu Kancharla\tvs\tSurya Prakash & Manoj\t',
+    '',
+    'Match#\tSemi Final\t\t\t',
+    '\tAugustine Gidla & Enoch Abraham Ediga\tvs\t4\t',
+    '\t2\tvs\t3\t',
+  ].join('\n');
+
+  el('loadSample').addEventListener('click', () => {
+    $paste.value = SAMPLE;
+    hideErr();
+  });
+
+  // ── Export / Import ──────────────────────────────────────
+  const stamp = () => {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+  };
+  const downloadBlob = (data, filename, type) => {
+    const blob = new Blob([data], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  };
+
+  el('exportJson').addEventListener('click', () => {
+    if (!state || !state.rounds.length) { alert('Nothing to export yet.'); return; }
+    save();
+    downloadBlob(JSON.stringify(state, null, 2), `bracket-excel-${stamp()}.json`, 'application/json');
+  });
+
+  el('exportText').addEventListener('click', () => {
+    if (!state || !state.rounds.length) { alert('Nothing to export yet.'); return; }
+    const lines = [];
+    lines.push('DRAW & BRACKET — Excel import');
+    lines.push('Exported ' + new Date().toString());
+    lines.push('');
+    state.rounds.forEach((round, ri) => {
+      lines.push(`═══ ${round.name.toUpperCase()} ═══`);
+      round.matches.forEach(m => {
+        m.winner = computeWinner(m);
+        const rA = resolvedSlot(m.a, ri);
+        const rB = resolvedSlot(m.b, ri);
+        const nameA = rA.name || (rA.kind === 'ref' ? `[W-M${rA.ref}]` : '[TBD]');
+        const nameB = rB.name || (rB.kind === 'ref' ? `[W-M${rB.ref}]` : '[TBD]');
+        const ga = m.games.filter(g => g === 'a').length;
+        const gb = m.games.filter(g => g === 'b').length;
+        const score = (ga || gb) ? `  [${ga}-${gb}]` : '';
+        const win = m.winner ? `  → ${m.winner === 'a' ? nameA : nameB}` : '';
+        lines.push(`  M${m.num}: ${nameA}  vs  ${nameB}${score}${win}`);
+        if (m.note) lines.push(`        note: ${m.note}`);
+      });
+      lines.push('');
+    });
+    downloadBlob(lines.join('\n'), `bracket-excel-${stamp()}.txt`, 'text/plain');
+  });
+
+  el('importFile').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const fr = new FileReader();
+    fr.onload = () => {
+      try {
+        const p = JSON.parse(fr.result);
+        if (!p || !Array.isArray(p.rounds)) throw new Error('Not a valid excel-mode export.');
+        // Basic normalize: ensure each match has games and slots
+        for (const r of p.rounds) {
+          if (!Array.isArray(r.matches)) throw new Error('Round is missing matches.');
+          for (const m of r.matches) {
+            if (!m.a || !m.b) throw new Error('Match is missing slots.');
+            if (!Array.isArray(m.games) || m.games.length !== 3) m.games = [null, null, null];
+          }
+        }
+        state = p;
+        if (state.source) $paste.value = state.source;
+        render();
+        hideErr();
+      } catch (err) {
+        showErr('Import failed: ' + (err && err.message ? err.message : String(err)));
+      }
+    };
+    fr.readAsText(f);
+    e.target.value = '';
+  });
+
+  // ── Boot ─────────────────────────────────────────────────
+  const loaded = load();
+  if (loaded) {
+    state = loaded;
+    if (state.source) $paste.value = state.source;
+    render();
+  } else {
+    renderEmpty();
+  }
+})();
+</script>
+</html>
